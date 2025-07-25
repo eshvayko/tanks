@@ -1,0 +1,21 @@
+{
+  "name": "tanks",
+  "version": "1.0.0",
+  "description": "very simple online tanks game",
+  "main": "server.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eshvayko/tanks.git"
+  },
+  "author": "eshvayko",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eshvayko/tanks/issues"
+  },
+  "homepage": "https://github.com/eshvayko/tanks#readme",
+  "dependencies": {
+    "express": "^5.1.0",
+    "socket.io": "^4.8.1"
+  }
+}
