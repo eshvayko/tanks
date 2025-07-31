@@ -10,7 +10,12 @@
     <div id="register">
         <form method="post" action="/checkData">
             <input type="text" name="playerName" placeholder="Введите имя">
-            <input type="text" name="key" placeholder="Введите пароль-ключ для входа">
+            <select name="tank">
+                <option value="ИС-7">ИС-7</option>
+                <option value="FV215b 183">FV215b 183</option>
+                <option value="Leopard 1">Leopard 1</option>
+                <option value="STB-1">STB-1</option>
+            </select>
             <button type="submit">Продолжить</button>
         </form>
     </div>
