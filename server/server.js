@@ -48,19 +48,18 @@ io.on("connection", (socket) => {
     socket.on("fire", () => {
         const player = players[socket.id];
         // Проверяем, что перезарядка закончилась
-        missiles.push({
-            num: missiles.length,
-            x: player.posX + 1,
-            y: player.posY + 0.5,
-            angle: player.angle + player.turretAngle,
-            owner: player
-        });
-        // Сбрасываем перезарядку
-        player.tank.currentRecharge = player.tank.recharge;
+        if (player) {
+            missiles.push({
+                num: missiles.length,
+                x: player.posX + 1,
+                y: player.posY + 0.5,
+                angle: player.angle + player.turretAngle,
+                owner: player
+            });
+            // Сбрасываем перезарядку
+            player.tank.currentRecharge = player.tank.recharge;
+        }
     })
-    // socket.on("new missile", (data) => {
-    //     missiles.push({x: data.x, y: data.y, angle: data.angle, owner: data.owner, timeHit: 0});
-    // });
 
     socket.on("update missiles", (newMissiles) => {
         missiles = [];
@@ -87,10 +86,6 @@ io.on("connection", (socket) => {
             players[socket.id].damageBlocked = data.damageBlocked;
             players[socket.id].damageDone = data.damageDone;
             players[socket.id].tank.hp = data.tank.hp;
-            // players[socket.id].tank = {
-            //     hp: data.tank.hp,
-            //     currentRecharge: data.tank.currentRecharge,
-            // };
         }
     });
 
@@ -109,7 +104,7 @@ io.on("connection", (socket) => {
             {x: 74.5, y: 75, angle: 180},
             {x: 45, y: 35.5, angle: 0}
         ]
-        players = {}; missiles = [];
+        players = {}; missiles = []; destroyedPlayers = []; info = [];
     })
 
     socket.on("status", (data) => {status = data})

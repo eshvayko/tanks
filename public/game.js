@@ -5,8 +5,6 @@ let yourPlayer, currentPlayer=structuredClone(yourPlayer); // current это т�
 
 socket.emit("new player", {playerName, tankName});
 
-// let players = []; // массив с положениями, танками и др.
-
 let oldPlayers = {}, oldStatus = "waiting", oldMissiles = [], oldInfo = [];
 let convertPlayers = [], convertMissiles = [];
 
@@ -18,10 +16,7 @@ socket.on("state", (state) => {
     if (JSON.stringify(players) !== JSON.stringify(oldPlayers) || oldStatus !== state.status || JSON.stringify(oldMissiles) !== JSON.stringify(missiles) || JSON.stringify(info) !== JSON.stringify(oldInfo)) {
         oldPlayers = players; oldMissiles = missiles; oldInfo = info;
         convertingPlayers(players);
-        // convertingMissiles(missiles); todo ну хзхз
         oldStatus = state.status;
-        // yourPlayer = new Player(Object.values(players)[Object.values(players).findIndex(p => p.name === playerName)]);
-        // convertPlayers(serverPlayers, state.startPositions);
         if (state.status === "waiting") {
             let html = `Подключенные игроки (${Object.keys(players).length}):<br><ol>`;
             for (let socketId in players) {
@@ -65,21 +60,13 @@ socket.on("state", (state) => {
                 }
             })
             state.status = "playing";
-            // сюда логику иргры (нет)
-            // document.querySelector("#waiting").style.display = "none";
-            // document.querySelector("canvas").style.display = "block";
-            // const ctx = document.querySelector("canvas").getContext("2d");
-            // ctx.fillStyle = "black";
-            // ctx.fillRect(0, 0, 300, 300);
         }
         else if (state.status === "game over") {
             document.querySelector("canvas").style.display = "none";
             document.querySelector("#gameover").style.display = "block";
             destroyedPlayers.push(convertPlayers[0]);
             let html = `Бой окончен<br>`
-            // for (let player of Object.values(players)) {
-            //     html += `${player.name} - Нанес ${player.damageDone}, заблокировал - ${player.damageBlocked}<br>`;
-            // }
+            destroyedPlayers = destroyedPlayers.filter(p => p !== null);
             for (let i = destroyedPlayers.length - 1; i >= 0; i--) {
                 html += `${destroyedPlayers.length - i} место: ${destroyedPlayers[i].tank.name} - ${destroyedPlayers[i].name} (нанес ${destroyedPlayers[i].damageDone}, заблокировал ${destroyedPlayers[i].damageBlocked})<br>`;
             }
@@ -92,18 +79,8 @@ socket.on("state", (state) => {
         button.onclick = () => socket.emit("ready");
         socket.emit("status", state.status);
     }
-    // if (state.status === "playing") {
-    //     gameLoop();
-    // }
 })
 
-// function convertingPlayers() {
-//     convertPlayers = [];
-//     for (let pl of Object.values(oldPlayers)) {
-//         if (pl.name === playerName) yourPlayer = new Player(pl);
-//         convertPlayers.push(new Player(pl))
-//     }
-// }
 function convertingPlayers(players) {
     const newConvertPlayers = [];
 
@@ -157,34 +134,3 @@ function convertingMissiles(missiles) {
     }
     convertMissiles = newConvertMissiles;
 }
-
-// function convertPlayers(serverPlayers, startPositions) {
-//     for (let player of players) { // удаление вышедших игроков
-//         if (!Object.values(serverPlayers).some(p => p.name === player.name)) {
-//             players.splice(players.indexOf(player), 1);
-//         }
-//     }
-//     for (let socketId in serverPlayers) {
-//         let currentPLayer = players[players.findIndex(p => p.name === serverPlayers[socketId].name)];
-//         if (!currentPLayer) {
-//             let index = Math.floor(Math.random() * startPositions.length)
-//             let position = startPositions[index];
-//             startPositions.splice(index, 1);
-//             socket.emit("startPositions", startPositions);
-//             players.push(new Player(serverPlayers[socketId].name, position.x, position.y, position.angle, 0, tanks["FV215b 183"]()));
-//         }
-//     }
-//     yourPlayer = players[players.findIndex(p => p.name === playerName)];
-// }
-
-// function initGame() {
-//     document.querySelector("#waiting").style.display = "none";
-//     document.querySelector("canvas").style.display = "block";
-//     console.log("инициализация...")
-// }
-//
-// function gameLoop() {
-//     ctx.clearRect(0, 0, 300, 300);
-//     ctx.fillStyle = "black";
-//     ctx.fillRect(0, 0, 300, 300);
-// }

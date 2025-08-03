@@ -132,10 +132,6 @@ function getCorners(obj, length=2, width=1){
     const centerY = obj.posY+0.5 || obj.y+width/2;
     const angleRad = obj.angle * Math.PI / 180;
 
-    // Размеры танка в мировых единицах
-    // const length = 2; // 2 клетки (1 клетка = 3 метра)
-    // const width = 1;  // 1 клетка
-
     // Половины размеров
     const halfLength = length / 2;
     const halfWidth = width / 2;
@@ -161,12 +157,6 @@ function getCorners(obj, length=2, width=1){
         };
     });
 }
-
-// const tanks = {
-//     "FV215b 183": () => new Tank("FV215b 183", 1908, 132, 20.18, 315, 930, 34, 14, 33.8, 19.19, 90),
-//     "STB-1": () => new Tank("STB-1", 1850, 165, 6.42, 245, 330, 55, 20, 52.57, 43.81),
-//     "Leopard 1": () => new Tank("Leopard 1", 1800, 52, 6.23, 255, 360, 65, 23, 59.14, 37.55)
-// };
 
 const tanks = {
     "Об. 268":             () => new Tank("Об. 268", 1908, 120, 14.2, 303, 690, 48, 18, 45.05, 60, 12),

@@ -40,13 +40,8 @@ class Player {
                 cx.fillRect(1.4*scale, -1.4*scale, 1.1*scale, scale/2);
                 cx.fillStyle = "white";
                 cx.fillText(text, 1.5*scale, -1.03*scale)
-                this.tank.hitTime -= time/1000;
-                if (this.tank.hitTime <= 0) {this.tank.hitTime = 0; this.tank.getDamage = 0;}
             }
             cx.restore();
-        } else if (this.tank.hitTime > 0) {
-            this.tank.hitTime -= time/1000;
-            if (this.tank.hitTime <= 0) {this.tank.hitTime = 0; this.tank.getDamage = 0;}
         }
     }
 
@@ -81,8 +76,6 @@ class Player {
             cx.fillRect(innerWidth/2-scale*7.5+scale*15*ratio+1, innerHeight*0.95+1, scale*15*damageRatio-2, scale-2)
             cx.fillStyle = "white"
             cx.fillText(text, (innerWidth/2-scale*7.5)+scale*15*ratio + scale*15*damageRatio/2 - 0.15*scale*text.length, innerHeight*0.973)
-            this.tank.hitTime -= time/1000;
-            if (this.tank.hitTime <= 0) {this.tank.hitTime = 0; this.tank.getDamage = 0;}
         }
     }
 
@@ -132,46 +125,6 @@ class Player {
             cx.restore();
             this.drawInfoForPlayer();
         }
-        // if (bash) cx.fillStyle = "#00aa00";
-        // cx.save();
-        // let translateX, translateY;
-        // if (viewport.y === 0) translateY = this.posY*scale;
-        // else if (viewport.y === map.length-viewport.height) translateY = (viewport.height - (map.length - this.posY))*scale
-        // else translateY = innerHeight / 2 - scale/2;
-        // if (viewport.x === 0) translateX = this.posX*scale;
-        // else if (viewport.x === map[0].length-viewport.width) translateX = (viewport.width - (map[0].length - this.posX))*scale
-        // else translateX = innerWidth / 2 - scale;
-
-        // if (this.name !== "eshvayko") {translateX = (this.posX - viewport.x) * scale; translateY = (this.posY - viewport.y) * scale;}
-        // cx.translate(translateX + scale, translateY + 0.5*scale);
-        // if (!bash) cx.fillStyle = "green";
-        // cx.rotate(this.angle*Math.PI/180);
-        // cx.fillRect(-1*scale, -0.5*scale, scale*2, scale)
-        // if (!bash) cx.fillStyle = "#005500";
-        // cx.beginPath();
-        // cx.arc(0, 0, scale/3, 0, 7);
-        // cx.fill();
-        // cx.rotate(this.turretAngle*Math.PI/180)
-        // if (!bash) cx.fillStyle = "black"
-        // cx.fillRect(-weaponSize / 2, -weaponSize / 2, scale*2, weaponSize);
-        // if (this.name !== "eshvayko") {cx.restore(); this.drawInfoForOtherPlayers(translateX, translateY, time, bash);}
-        // else {
-        //     cx.fillStyle = "red";
-        //     cx.fillRect(-weaponSize / 2+scale*2, 0, scale*20, 1);
-        //     cx.restore();
-        //     this.drawInfoForPlayer();
-        // }
-
-        // let corners = this.getPlayerCorners();
-        // corners.forEach(corner => {
-        //     const screenX = (corner.x - viewport.x) * scale;
-        //     const screenY = (corner.y - viewport.y) * scale;
-        //
-        //     cx.fillStyle = "red";
-        //     cx.beginPath();
-        //     cx.arc(screenX, screenY, 5, 0, Math.PI * 2);
-        //     cx.fill();
-        // });
     }
 
     update(time) {
@@ -433,10 +386,6 @@ function getCorners(obj, length=2, width=1){
     const centerX = obj.posX+1 || obj.x+length/2;
     const centerY = obj.posY+0.5 || obj.y+width/2;
     const angleRad = obj.angle * Math.PI / 180;
-
-    // Размеры танка в мировых единицах
-    // const length = 2; // 2 клетки (1 клетка = 3 метра)
-    // const width = 1;  // 1 клетка
 
     // Половины размеров
     const halfLength = length / 2;

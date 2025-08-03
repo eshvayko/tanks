@@ -157,7 +157,6 @@ socket.on("state", (state) => {
         }
         if (convertPlayers.find(pl => pl.name === currentPlayer.name)) convertPlayers.find(pl => pl.name === currentPlayer.name).draw(time, null);
         if (yourPlayer.tank.hp > 0) yourPlayer.drawInfoForPlayer(time);
-        // updateMissiles(time); todo ну хз
         socket.emit("movement", {
             posX: yourPlayer.posX,
             posY: yourPlayer.posY,
