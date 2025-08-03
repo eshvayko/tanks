@@ -91,7 +91,7 @@ io.on("connection", (socket) => {
 
     socket.on("disconnect", () => {
         try {
-            destroyedPlayers.push(players[socket.id])
+            if (status === "playing") destroyedPlayers.push(players[socket.id])
             delete players[socket.id];
         } catch (e) {}
     })
