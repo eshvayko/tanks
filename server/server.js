@@ -8,13 +8,14 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const {tanks, checkCollision} = require("./player.js")
+const {tanks, checkCollision} = require("./utils.js")
 
 let status = "waiting";
 
 app.set("port", 3000);
 app.use("/public", express.static(path.dirname(__dirname) + '/public'));
 app.use("/sounds", express.static(path.dirname(__dirname) + '/sounds'));
+app.use("/sprites", express.static(path.dirname(__dirname) + '/sprites'));
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
@@ -24,8 +25,7 @@ app.get("/", (req, res) => {
 app.post("/checkData", (req, res) => {
     let playerName = req.body.playerName;
     let tankName = req.body.tank;
-    if (Object.keys(players).length+1 <= 5 && playerName.trim() !== "" && !Object.values(players).some(p => p.name === playerName)) {
-        //
+    if (Object.keys(players).length+1 <= 5 && playerName.trim() !== "" && !Object.values(players).some(p => p.name === playerName) && playerName.length < 50) {
         res.redirect(`/game?name=${encodeURIComponent(playerName)}&tank=${encodeURIComponent(tankName)}`);
     } else {
         res.redirect("/");
@@ -87,7 +87,6 @@ io.on("connection", (socket) => {
             players[socket.id].damageBlocked = data.damageBlocked;
             players[socket.id].damageDone = data.damageDone;
             players[socket.id].tank.hp = data.tank.hp;
-            players[socket.id].tank.currentRecharge = data.tank.currentRecharge;
             // players[socket.id].tank = {
             //     hp: data.tank.hp,
             //     currentRecharge: data.tank.currentRecharge,
@@ -97,11 +96,19 @@ io.on("connection", (socket) => {
 
     socket.on("disconnect", () => {
         try {
+            destroyedPlayers.push(players[socket.id])
             delete players[socket.id];
         } catch (e) {}
     })
 
     socket.on("game over", () => {
+        startPositions = [
+            {x: 0.5, y: 1, angle: 0},
+            {x: 0.5, y: 75, angle: 0},
+            {x: 74.5, y: 1, angle: 180},
+            {x: 74.5, y: 75, angle: 180},
+            {x: 45, y: 35.5, angle: 0}
+        ]
         players = {}; missiles = [];
     })
 
@@ -111,19 +118,21 @@ io.on("connection", (socket) => {
 
 let players = {};
 let missiles = [];
+let info = [];
+let destroyedPlayers = [];
 
 let startPositions = [
     {x: 0.5, y: 1, angle: 0},
     {x: 0.5, y: 75, angle: 0},
     {x: 74.5, y: 1, angle: 180},
     {x: 74.5, y: 75, angle: 180},
-    {x: 38, y: 38, angle: 0}
+    {x: 45, y: 35.5, angle: 0}
 ];
 
-server.listen(3000, () => console.log("Сервер запущен - http://localhost:3000"));
+server.listen(3000, "0.0.0.0", () => console.log("Сервер слушает на всех интерфейсах, порт 3000"));
 
 function cycle() {
-    io.sockets.emit('state', {status, players, missiles});
+    io.sockets.emit('state', {status, players, missiles, info, destroyedPlayers});
 }
 
 function updateMissiles(time) {
@@ -144,7 +153,7 @@ function updateMissiles(time) {
 function updateRecharge(time) {
     for (let id in players) {
         if (players[id].tank.currentRecharge > 0) {
-            players[id].tank.currentRecharge -= time / 1000;
+            players[id].tank.currentRecharge -= time / 1000;// я хз почему time * 2 ровно в 2 раза медленее обрабатывается перезарядка
             if (players[id].tank.currentRecharge < 0) {
                 players[id].tank.currentRecharge = 0;
             }
@@ -158,13 +167,18 @@ function updateRecharge(time) {
     }
 }
 
+function updateInfo(time) {
+    for (let i of info) {
+        if (i.time === 0) info.splice(info.indexOf(i), 1);
+        i.time = Math.max(0, i.time - time);
+    }
+}
+
 function hit(target, owner) {
     let ownerTank = owner.tank;
     let thisTank = target.tank;
-    let armor = thisTank.armor / 400;
-    armor -= ownerTank.penetration / 2000;
-    armor = Math.max(armor, 0);
-    let struck = Math.random();
+    let struck = Math.random()
+    let armor = Math.max(Math.min(0.5 - (owner.tank.penetration - target.tank.armor - 100) / 400, 1), 0)
     let damage = 0;
     if (struck > armor) {
         io.sockets.emit("звук", {sound: "попадание", name: target.name, name2: undefined})// звук попадание в танк если этот танк твой();
@@ -172,10 +186,12 @@ function hit(target, owner) {
         damage = Math.round(ownerTank.damage * coeff);
         thisTank.hp -= damage; thisTank.getDamage = damage; thisTank.hitTime = 1;
         if (thisTank.hp <= 0) {
-            io.sockets.emit("звук", {sound: "танк уничтожен", name: target.name, name2: owner.name})// звук танк уничтожен()
             damage = damage+thisTank.hp
             thisTank.getDamage = damage;
             thisTank.hp = 0;
+            info.push({text: `${target.tank.name} (${target.name}) 🔫 ${owner.tank.name} (${owner.name})`, time: 5000})
+            destroyedPlayers.push(target);
+            io.sockets.emit("звук", {sound: "танк уничтожен", name: target.name, name2: owner.name})// звук танк уничтожен()
         } else {
             io.sockets.emit("звук", {sound: "есть пробитие", name: owner.name, name2: undefined})
         }
@@ -183,6 +199,7 @@ function hit(target, owner) {
     } else {
         target.damageBlocked += ownerTank.damage;
         io.sockets.emit("звук", {sound: "броня не пробита", name: owner.name, name2: undefined})
+        io.sockets.emit("звук", {sound: "непробитие", name: target.name, name2: undefined})
     }
     io.sockets.emit("hit", {
         name: target.name,
@@ -195,13 +212,19 @@ function hit(target, owner) {
     });
 }
 
+let lastUpdate = 0;
 setInterval(() => {
     if (io) {
-        updateRecharge(1000/60)
-        updateMissiles(1000/60)
+        const now = Date.now();
+        const delta = now - lastUpdate;
+        lastUpdate = now;
+
+        updateInfo(delta);
+        updateRecharge(delta);
+        updateMissiles(delta);
         cycle();
     }
 }, 1000/60)
 
 // todo
-//  3. попробовать спрайт танка; (самое последнее)
+//  1. добавить танки

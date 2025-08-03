@@ -86,36 +86,81 @@ class Player {
         }
     }
 
-    draw(time, bash=false) {
-        if (bash) cx.fillStyle = "#00aa00";
-        cx.save();
+    draw(time, info, bash=false) {
         let translateX, translateY;
-        if (viewport.y === 0) translateY = this.posY*scale;
-        else if (viewport.y === map.length-viewport.height) translateY = (viewport.height - (map.length - this.posY))*scale
-        else translateY = innerHeight / 2 - scale/2;
-        if (viewport.x === 0) translateX = this.posX*scale;
-        else if (viewport.x === map[0].length-viewport.width) translateX = (viewport.width - (map[0].length - this.posX))*scale
-        else translateX = innerWidth / 2 - scale;
+        if (bash) {
+            cx.fillStyle = "#00aa00";
+            cx.save();
+            if (viewport.y === 0) translateY = this.posY*scale;
+            else if (viewport.y === map.length-viewport.height) translateY = (viewport.height - (map.length - this.posY))*scale
+            else translateY = innerHeight / 2 - scale/2;
+            if (viewport.x === 0) translateX = this.posX*scale;
+            else if (viewport.x === map[0].length-viewport.width) translateX = (viewport.width - (map[0].length - this.posX))*scale
+            else translateX = innerWidth / 2 - scale;
 
-        if (this.name !== yourPlayer.name) {translateX = (this.posX - viewport.x) * scale; translateY = (this.posY - viewport.y) * scale;}
-        cx.translate(translateX + scale, translateY + 0.5*scale);
-        if (!bash) cx.fillStyle = "green";
-        cx.rotate(this.angle*Math.PI/180);
-        cx.fillRect(-1*scale, -0.5*scale, scale*2, scale)
-        if (!bash) cx.fillStyle = "#005500";
-        cx.beginPath();
-        cx.arc(0, 0, scale/3, 0, 7);
-        cx.fill();
-        cx.rotate(this.turretAngle*Math.PI/180)
-        if (!bash) cx.fillStyle = "black"
-        cx.fillRect(-weaponSize / 2, -weaponSize / 2, scale*2, weaponSize);
+            if (this.name !== yourPlayer.name) {translateX = (this.posX - viewport.x) * scale; translateY = (this.posY - viewport.y) * scale;}
+            cx.translate(translateX + scale, translateY + 0.5*scale);
+            cx.rotate(this.angle*Math.PI/180);
+            cx.fillRect(-1*scale, -0.5*scale, scale*2, scale)
+            cx.beginPath();
+            cx.arc(0, 0, scale/3, 0, 7);
+            cx.fill();
+            cx.rotate(this.turretAngle*Math.PI/180)
+            cx.fillRect(-weaponSize / 2, -weaponSize / 2, scale*1.8, weaponSize);
+        } else {
+            cx.save();
+            if (viewport.y === 0) translateY = this.posY*scale;
+            else if (viewport.y === map.length-viewport.height) translateY = (viewport.height - (map.length - this.posY))*scale
+            else translateY = innerHeight / 2 - scale/2;
+            if (viewport.x === 0) translateX = this.posX*scale;
+            else if (viewport.x === map[0].length-viewport.width) translateX = (viewport.width - (map[0].length - this.posX))*scale
+            else translateX = innerWidth / 2 - scale;
+
+            if (this.name !== yourPlayer.name) {translateX = (this.posX - viewport.x) * scale; translateY = (this.posY - viewport.y) * scale;}
+            cx.translate(translateX + scale, translateY + 0.5*scale);
+            cx.fillStyle = "green";
+            cx.rotate(this.angle*Math.PI/180);
+            cx.drawImage(document.querySelector("#tank"), 0, 0, 750, 530, -1*scale, -0.5*scale, scale*2, scale)
+            cx.fillStyle = "#005500";
+            cx.rotate(this.turretAngle*Math.PI/180)
+            cx.drawImage(document.querySelector("#turret"), 0, 0, 740, 290, -scale*0.39, -scale*0.39, scale*2, scale*0.78)
+        }
         if (this.name !== yourPlayer.name) {cx.restore(); this.drawInfoForOtherPlayers(translateX, translateY, time, bash);}
         else {
             cx.fillStyle = "red";
-            cx.fillRect(-weaponSize / 2+scale*2, 0, scale*20, 1);
+            cx.fillRect(-weaponSize / 2+scale*1.7, 0, scale*20, 1);
             cx.restore();
-            // this.drawInfoForPlayer(time);
+            this.drawInfoForPlayer();
         }
+        // if (bash) cx.fillStyle = "#00aa00";
+        // cx.save();
+        // let translateX, translateY;
+        // if (viewport.y === 0) translateY = this.posY*scale;
+        // else if (viewport.y === map.length-viewport.height) translateY = (viewport.height - (map.length - this.posY))*scale
+        // else translateY = innerHeight / 2 - scale/2;
+        // if (viewport.x === 0) translateX = this.posX*scale;
+        // else if (viewport.x === map[0].length-viewport.width) translateX = (viewport.width - (map[0].length - this.posX))*scale
+        // else translateX = innerWidth / 2 - scale;
+
+        // if (this.name !== "eshvayko") {translateX = (this.posX - viewport.x) * scale; translateY = (this.posY - viewport.y) * scale;}
+        // cx.translate(translateX + scale, translateY + 0.5*scale);
+        // if (!bash) cx.fillStyle = "green";
+        // cx.rotate(this.angle*Math.PI/180);
+        // cx.fillRect(-1*scale, -0.5*scale, scale*2, scale)
+        // if (!bash) cx.fillStyle = "#005500";
+        // cx.beginPath();
+        // cx.arc(0, 0, scale/3, 0, 7);
+        // cx.fill();
+        // cx.rotate(this.turretAngle*Math.PI/180)
+        // if (!bash) cx.fillStyle = "black"
+        // cx.fillRect(-weaponSize / 2, -weaponSize / 2, scale*2, weaponSize);
+        // if (this.name !== "eshvayko") {cx.restore(); this.drawInfoForOtherPlayers(translateX, translateY, time, bash);}
+        // else {
+        //     cx.fillStyle = "red";
+        //     cx.fillRect(-weaponSize / 2+scale*2, 0, scale*20, 1);
+        //     cx.restore();
+        //     this.drawInfoForPlayer();
+        // }
 
         // let corners = this.getPlayerCorners();
         // corners.forEach(corner => {
@@ -183,8 +228,6 @@ class Player {
         this.posX += moveDist * Math.cos(this.angle * Math.PI/180);
         this.posY += moveDist * Math.sin(this.angle * Math.PI/180);
 
-        this.tank.currentRecharge -= time/1000;
-        if (this.tank.currentRecharge < 0) this.tank.currentRecharge = 0;
         this.updateTurretAngle(time);
         if (checkCollision(this)) this.stop();
         this.oldPos = {x: this.posX, y: this.posY, angle: this.angle};

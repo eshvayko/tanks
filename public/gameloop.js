@@ -48,10 +48,10 @@ function drawMap() {
 function correctViewport(player=yourPlayer) {
     let viewportX = player.posX - (viewport.width / 2 - 1);
     let viewportY = player.posY - (viewport.height / 2 - 0.5);
-    if (viewportX < 0) viewportX = 0;
-    else if (viewportX > map[0].length-viewport.width) viewportX = map[0].length-viewport.width;
-    if (viewportY < 0) viewportY = 0;
-    else if (viewportY > map.length-viewport.height) viewportY = map.length-viewport.height;
+    // if (viewportX < 0) viewportX = 0;
+    // else if (viewportX > map[0].length-viewport.width) viewportX = map[0].length-viewport.width;
+    // if (viewportY < 0) viewportY = 0;
+    // else if (viewportY > map.length-viewport.height) viewportY = map.length-viewport.height;
 
     viewport.x = viewportX;
     viewport.y = viewportY;
@@ -77,16 +77,36 @@ function drawMissiles() {
     }
 }
 
+function drawInfo() {
+    let count = 0;
+    for (let i of oldInfo) {
+        cx.save();
+        count++;
+        let x = innerWidth / 2 - i.text.length*0.15*scale;
+        let y = 50+15*count;
+        cx.translate(x, y);
+
+        cx.font = `bold ${scale/2}px monospace`;
+        cx.fillStyle = "white";
+        cx.fillText(i.text, 0, 0);
+        cx.font = `${scale/2}px monospace`;
+        cx.fillStyle = "black";
+        cx.fillText(i.text, 0, 0);
+        cx.restore();
+    }
+}
+
 socket.on("recharge", ({name}) => {
     const player = convertPlayers.find(p => p.name === name);
     if (player) player.currentRecharge = player.recharge;
 })
 
 socket.on("звук", (data) => {
-    if (data.sound === "попадание" && (yourPlayer.name === data.name)) {(new Audio("/sounds/попадание.mp3")).play(); console.log("попадание в меня")}
-    else if (data.sound === "танк уничтожен" && (yourPlayer.name === data.name || yourPlayer.name === data.name2)) {(new Audio("/sounds/уничтожен.mp3")).play(); console.log("танк уничтожен")}
-    else if (data.sound === 'есть пробитие' && yourPlayer.name === data.name) {(new Audio("/sounds/есть пробиьие.mp3")).play(); console.log("есть пробитие")}
-    else if (data.sound === "броня не пробита" && yourPlayer.name === data.name) {(new Audio("/sounds/броня не пробитв.mp3")).play(); console.log("броня не пробита")}
+    if (data.sound === "попадание" && (yourPlayer.name === data.name)) {let audio = new Audio("/sounds/попадание.mp3"); audio.volume = 0.3 ; audio.play();}
+    else if (data.sound === "танк уничтожен" && (yourPlayer.name === data.name || yourPlayer.name === data.name2)) {(new Audio("/sounds/уничтожен.mp3")).play();}
+    else if (data.sound === 'есть пробитие' && yourPlayer.name === data.name) {(new Audio("/sounds/есть пробиьие.mp3")).play();}
+    else if (data.sound === "броня не пробита" && yourPlayer.name === data.name) {(new Audio("/sounds/броня не пробитв.mp3")).play();}
+    else if (data.sound === "непробитие" && yourPlayer.name === data.name) {let audio = new Audio("/sounds/непробитие.mp3"); audio.volume = 0.3 ; audio.play();}
 })
 
 socket.on("hit", ({name, name2, damage, newHp, isDestroyed, damageDone, damageBlocked}) => {
@@ -122,17 +142,20 @@ socket.on("hit", ({name, name2, damage, newHp, isDestroyed, damageDone, damageBl
 
 socket.on("state", (state) => {
     if (state.status === "playing") {
-        if (convertPlayers.length <= 1) state.status = "game over";
+        if (convertPlayers.length <= 1) {state.status = "game over"; return;}
         let time = 1000/60;
         cx.clearRect(0, 0, canvas.width, canvas.height);
         if (yourPlayer.tank.hp > 0) yourPlayer.update(time);
         correctViewport(currentPlayer);
         drawMap();
         drawMissiles();
+        drawInfo();
         for (let pl of convertPlayers) {
-            if (!isInBush(pl) || Math.hypot(pl.posX - yourPlayer.posX, pl.posY - yourPlayer.posY) < 10 || pl.name === yourPlayer.name || pl.name === currentPlayer.name) pl.draw(time)
-            else pl.draw(time, true);
+            if (pl.name === currentPlayer.name) continue;
+            if (!isInBush(pl) || Math.hypot(pl.posX - yourPlayer.posX, pl.posY - yourPlayer.posY) < 10 || pl.name === yourPlayer.name) pl.draw(time, null)
+            else pl.draw(time, null, true);
         }
+        if (convertPlayers.find(pl => pl.name === currentPlayer.name)) convertPlayers.find(pl => pl.name === currentPlayer.name).draw(time, null);
         if (yourPlayer.tank.hp > 0) yourPlayer.drawInfoForPlayer(time);
         // updateMissiles(time); todo ну хз
         socket.emit("movement", {
@@ -147,8 +170,7 @@ socket.on("state", (state) => {
             damageDone: yourPlayer.damageDone,
             damageBlocked: yourPlayer.damageBlocked,
             tank: {
-                hp: yourPlayer.tank.hp,
-                currentRecharge: yourPlayer.tank.currentRecharge,
+                hp: yourPlayer.tank.hp
             }
         });
     }

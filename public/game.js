@@ -7,14 +7,16 @@ socket.emit("new player", {playerName, tankName});
 
 // let players = []; // массив с положениями, танками и др.
 
-let oldPlayers = {}, oldStatus = "waiting", oldMissiles = [];
+let oldPlayers = {}, oldStatus = "waiting", oldMissiles = [], oldInfo = [];
 let convertPlayers = [], convertMissiles = [];
 
 socket.on("state", (state) => {
     let missiles = state.missiles;
     let players = state.players;
-    if (JSON.stringify(players) !== JSON.stringify(oldPlayers) || oldStatus !== state.status || JSON.stringify(oldMissiles) !== JSON.stringify(missiles)) {
-        oldPlayers = players; oldMissiles = missiles;
+    let info = state.info;
+    let destroyedPlayers = state.destroyedPlayers;
+    if (JSON.stringify(players) !== JSON.stringify(oldPlayers) || oldStatus !== state.status || JSON.stringify(oldMissiles) !== JSON.stringify(missiles) || JSON.stringify(info) !== JSON.stringify(oldInfo)) {
+        oldPlayers = players; oldMissiles = missiles; oldInfo = info;
         convertingPlayers(players);
         // convertingMissiles(missiles); todo ну хзхз
         oldStatus = state.status;
@@ -73,10 +75,13 @@ socket.on("state", (state) => {
         else if (state.status === "game over") {
             document.querySelector("canvas").style.display = "none";
             document.querySelector("#gameover").style.display = "block";
-
+            destroyedPlayers.push(convertPlayers[0]);
             let html = `Бой окончен<br>`
-            for (let player of Object.values(players)) {
-                html += `${player.name} - Нанес ${player.damageDone}, заблокировал - ${player.damageBlocked}<br>`;
+            // for (let player of Object.values(players)) {
+            //     html += `${player.name} - Нанес ${player.damageDone}, заблокировал - ${player.damageBlocked}<br>`;
+            // }
+            for (let i = destroyedPlayers.length - 1; i >= 0; i--) {
+                html += `${destroyedPlayers.length - i} место: ${destroyedPlayers[i].tank.name} - ${destroyedPlayers[i].name} (нанес ${destroyedPlayers[i].damageDone}, заблокировал ${destroyedPlayers[i].damageBlocked})<br>`;
             }
             document.querySelector("#gameover").innerHTML = html;
             state.status = "waiting";
