@@ -158,7 +158,6 @@ class Player {
             this.acceleration = this.currentSpeed > 0 ? -deceleration : deceleration;
             if (this.currentSpeed === 0) this.acceleration = 0;
         }
-        // console.log(`цель:${this.targetSpeed}\ncurrentSpeed до: ${this.currentSpeed}\nчто прибавляем: acceleration: ${this.acceleration} ${roundToSigns(this.acceleration * time / 1000, 6)}\n currentSpeed после: ${this.currentSpeed+roundToSigns(this.acceleration * time / 1000, 6)}`);
         // Обновляем скорость с учетом ускорения
         let oldSpeed = this.currentSpeed;
         this.currentSpeed += roundToSigns(this.acceleration * time / 1000, 6);
@@ -229,29 +228,6 @@ class Player {
         this.posY = this.oldPos.y;
         this.angle = this.oldPos.angle;
     }
-
-    hit(tank) {
-        let armor = this.tank.armor / 400;
-        armor -= tank.penetration / 2000;
-        if (armor < 0) armor = 0;
-        let struck = Math.random();
-        if (struck > armor) {
-            if (JSON.stringify(this.tank) === JSON.stringify(yourPlayer.tank)) console.log("в нас попали!");
-            let coeff = (Math.floor(Math.random() * 50) + 75) / 100;
-            let damage = Math.round(tank.damage * coeff);
-            this.tank.hp -= damage; this.tank.getDamage = damage; this.tank.hitTime = 1;
-            if (this.tank.hp <= 0) {
-                if (JSON.stringify(tank) === JSON.stringify(yourPlayer.tank)) console.log("танк уничтожен")
-                this.tank.getDamage = damage+this.tank.hp;
-                this.tank.hp = 0;
-                convertPlayers.splice(convertPlayers.findIndex(p => p.name === this.name), 1)
-            } else {
-                if (JSON.stringify(tank) === JSON.stringify(yourPlayer.tank)) console.log("есть пробитие")
-            }
-        } else {
-            if (JSON.stringify(tank) === JSON.stringify(yourPlayer.tank)) console.log("броня не пробита")
-        }
-    }
 }
 
 class Missile {
@@ -265,7 +241,6 @@ class Missile {
     }
 
     draw(hit, time=null) {
-        console.log("рисование снаряда")
         const screenX = (this.x - viewport.x) * scale;
         const screenY = (this.y - viewport.y) * scale;
         if (hit) this.timeHit = 0.5;
